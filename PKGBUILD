@@ -104,7 +104,8 @@ _srcname="linux-${pkgver}-xanmod${xanmod}"
 
 source=("https://cdn.kernel.org/pub/linux/kernel/v${_branch}/linux-${_major}.tar."{xz,sign}
         "https://downloads.sourceforge.net/project/xanmod/releases/lts/${pkgver}-xanmod${xanmod}/patch-${pkgver}-xanmod${xanmod}.xz"
-        choose-gcc-optimization.sh)
+        choose-gcc-optimization.sh
+        nvidia-drm-compat.patch)
 validpgpkeys=(
     'ABAF11C65A2970B130ABE3C479BE3E4300411886' # Linux Torvalds
     '647F28654894E3BD457199BE38DBBDC86092693E' # Greg Kroah-Hartman
@@ -120,7 +121,8 @@ done
 sha256sums=('9106a4605da9e31ff17659d958782b815f9591ab308d03b0ee21aad6c7dced4b'
             'SKIP'
             '6087873eddad2ad04336dbdfd87e28879caee047d6ca0c3c6fad82a684e02f86'
-            'f4acc1760990c54348a029315d1505ccb7c7270cd70a9aeb728bffcced51e767')
+            'f4acc1760990c54348a029315d1505ccb7c7270cd70a9aeb728bffcced51e767'
+            'SKIP')
 
 export KBUILD_BUILD_HOST=${KBUILD_BUILD_HOST:-archlinux}
 export KBUILD_BUILD_USER=${KBUILD_BUILD_USER:-makepkg}
@@ -178,6 +180,10 @@ prepare() {
   scripts/config --disable CONFIG_KASAN_GENERIC
   scripts/config --disable CONFIG_KASAN_SW_TAGS
   scripts/config --disable CONFIG_KASAN_VMALLOC
+
+  # Enable NVIDIA driver 570.xx compatibility
+  msg2 "Enabling NVIDIA driver 570.xx DRM compatibility..."
+  scripts/config --enable CONFIG_DRM_NVIDIA_COMPAT
 
   # User set. See at the top of this file
   if [ "$use_tracers" = "y" ]; then
