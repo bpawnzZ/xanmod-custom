@@ -185,6 +185,35 @@ prepare() {
   msg2 "Enabling NVIDIA driver 570.xx DRM compatibility..."
   scripts/config --enable CONFIG_DRM_NVIDIA_COMPAT
 
+  # ASUS G752VS Optimizations (i7-6820HK + GTX 1070)
+  msg2 "Applying ASUS G752VS hardware optimizations..."
+  # Set Skylake microarchitecture optimization (x86-64-v3)
+  scripts/config --set-val CONFIG_MCORE2 n
+  scripts/config --set-val CONFIG_MK8 n
+  scripts/config --set-val CONFIG_MATOM n
+  scripts/config --set-val CONFIG_GENERIC_CPU n
+  scripts/config --set-val CONFIG_MNATIVE_INTEL y
+  # Enable aggressive Intel P-State passive mode for gaming
+  scripts/config --set-str CONFIG_CPU_FREQ_DEFAULT_GOV_SCHEDUTIL n
+  scripts/config --set-val CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND y
+  scripts/config --set-val CONFIG_INTEL_PSTATE passive
+  # HZ=1000 for lower latency (better gaming)
+  scripts/config --set-val CONFIG_HZ_1000 y
+  scripts/config --set-val CONFIG_HZ_300 n
+  scripts/config --set-val CONFIG_HZ 1000
+  # Full preemption for better responsiveness
+  scripts/config --set-val CONFIG_PREEMPT y
+  scripts/config --set-val CONFIG_PREEMPT_DYNAMIC y
+  # Transparent HugePages to madvise (memory optimization)
+  scripts/config --set-val CONFIG_TRANSPARENT_HUGEPAGE_MADVISE y
+  scripts/config --set-val CONFIG_TRANSPARENT_HUGEPAGE_ALWAYS n
+  # Enable futex2 for Wine/Proton compatibility
+  scripts/config --enable CONFIG_FUTEX2
+  # ASUS WMI and ROG specific modules
+  scripts/config --enable CONFIG_ASUS_WMI
+  scripts/config --enable CONFIG_ASUS_NB_WMI
+  scripts/config --enable CONFIG_ASUS_WIRELESS
+
   # User set. See at the top of this file
   if [ "$use_tracers" = "y" ]; then
     msg2 "Enabling CONFIG_FTRACE only if we are not compiling with clang..."
