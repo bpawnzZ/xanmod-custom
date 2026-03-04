@@ -1,0 +1,7 @@
+src/
+pkg/
+*.pkg.tar*
+config.last
+linux-6.18.tar.xz
+linux-6.18.tar.sign
+patch-6.18.15-xanmod1.xz
