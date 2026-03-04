@@ -1,0 +1,66 @@
+name: Build and Release XanMod LTS Kernel
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+      options: --privileged
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup system and dependencies
+      run: |
+        pacman -Syu --noconfirm
+        pacman -S --noconfirm --needed base-devel git sudo
+        echo "nobody ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+        useradd -m -s /bin/bash builder
+        chown -R builder:builder .
+
+    - name: Build kernel and headers
+      run: |
+        sudo -u builder bash -c "
+          cd /github/workspace
+          export MAKEFLAGS='-j$(nproc)'
+          
+          # Build kernel package from main directory
+          makepkg -s --noconfirm --skippgpcheck
+          
+          # Build headers package from headers directory
+          cd /github/workspace/headers
+          makepkg -s --noconfirm --skippgpcheck
+        "
+
+    - name: List built packages
+      run: |
+        find /github/workspace -name "*.pkg.tar*" -type f | xargs ls -la
+        find /github/workspace/headers -name "*.pkg.tar*" -type f | xargs ls -la
+
+    - name: Upload kernel package artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: linux-xanmod-lts-packages
+        path: |
+          /github/workspace/*.pkg.tar*
+          /github/workspace/headers/*.pkg.tar*
+        retention-days: 7
+
+    - name: Create GitHub Release
+      if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          /github/workspace/*.pkg.tar*
+          /github/workspace/headers/*.pkg.tar*
+        generate_release_notes: true
+        draft: false
+        prerelease: false

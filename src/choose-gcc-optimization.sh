@@ -1,0 +1,1 @@
+/home/insomnia/git/xanmod/linux-xanmod-lts/choose-gcc-optimization.sh
