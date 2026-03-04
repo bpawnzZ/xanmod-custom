@@ -21,37 +21,32 @@ jobs:
     - name: Setup system and dependencies
       run: |
         pacman -Syu --noconfirm
-        pacman -S --noconfirm --needed base-devel git sudo
-        echo "nobody ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-        useradd -m -s /bin/bash builder
-        chown -R builder:builder .
+        pacman -S --noconfirm --needed base-devel git sudo bc cpio pahole python rust rust-bindgen rust-src libelf gettext
+        echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+        useradd -m -s /bin/bash builder || true
 
     - name: Build kernel and headers
       run: |
-        sudo -u builder bash -c "
-          cd /github/workspace
-          export MAKEFLAGS='-j$(nproc)'
-          
-          # Build both kernel and headers packages from main PKGBUILD
-          makepkg -s --noconfirm --skippgpcheck
-        "
+        export MAKEFLAGS="-j$(nproc)"
+        # Build both kernel and headers packages
+        makepkg -s --noconfirm --skippgpcheck
 
     - name: List built packages
       run: |
-        find /github/workspace -name "*.pkg.tar*" -type f | xargs ls -la
+        find . -name "*.pkg.tar*" -type f | xargs ls -la
 
     - name: Upload kernel package artifact
       uses: actions/upload-artifact@v4
       with:
         name: linux-xanmod-lts-packages
-        path: /github/workspace/*.pkg.tar*
+        path: ./*.pkg.tar*
         retention-days: 7
 
     - name: Create GitHub Release
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       uses: softprops/action-gh-release@v1
       with:
-        files: /github/workspace/*.pkg.tar*
+        files: ./*.pkg.tar*
         generate_release_notes: true
         draft: false
         prerelease: false
