@@ -2,9 +2,9 @@ name: Build and Release XanMod LTS Kernel
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "nvidia-compat" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "nvidia-compat" ]
   workflow_dispatch:
 
 jobs:
