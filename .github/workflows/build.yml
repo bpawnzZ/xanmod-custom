@@ -32,35 +32,26 @@ jobs:
           cd /github/workspace
           export MAKEFLAGS='-j$(nproc)'
           
-          # Build kernel package from main directory
-          makepkg -s --noconfirm --skippgpcheck
-          
-          # Build headers package from headers directory
-          cd /github/workspace/headers
+          # Build both kernel and headers packages from main PKGBUILD
           makepkg -s --noconfirm --skippgpcheck
         "
 
     - name: List built packages
       run: |
         find /github/workspace -name "*.pkg.tar*" -type f | xargs ls -la
-        find /github/workspace/headers -name "*.pkg.tar*" -type f | xargs ls -la
 
     - name: Upload kernel package artifact
       uses: actions/upload-artifact@v4
       with:
         name: linux-xanmod-lts-packages
-        path: |
-          /github/workspace/*.pkg.tar*
-          /github/workspace/headers/*.pkg.tar*
+        path: /github/workspace/*.pkg.tar*
         retention-days: 7
 
     - name: Create GitHub Release
-      if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       uses: softprops/action-gh-release@v1
       with:
-        files: |
-          /github/workspace/*.pkg.tar*
-          /github/workspace/headers/*.pkg.tar*
+        files: /github/workspace/*.pkg.tar*
         generate_release_notes: true
         draft: false
         prerelease: false
