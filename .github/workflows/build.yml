@@ -26,8 +26,9 @@ jobs:
         useradd -m -s /bin/bash builder || true
         chown -R builder:builder .
 
-    - name: Build kernel and headers
+    - name: Clean and build kernel
       run: |
+        rm -rf src/ pkg/ *.pkg.tar*
         su - builder -c "
           cd $(pwd) &&
           export MAKEFLAGS='-j$(nproc)' &&
