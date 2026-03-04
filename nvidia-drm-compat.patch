@@ -1,5 +1,5 @@
---- a/drivers/gpu/drm/Kconfig
-+++ b/drivers/gpu/drm/Kconfig
+--- a/drivers/gpu/drm/Kconfig	2026-01-01 00:00:00.000000000 +0000
++++ b/drivers/gpu/drm/Kconfig	2026-01-01 00:00:01.000000000 +0000
 @@ -55,6 +55,17 @@ config DRM_DEBUG_MM
  		DRM_DEBUG_MM is enabled, and it will affect the
  		performance.
@@ -18,77 +18,3 @@
  source "drivers/gpu/drm/i2c/Kconfig"
  
  source "drivers/gpu/drm/arm/Kconfig"
---- a/include/drm/drm_framebuffer.h
-+++ b/include/drm/drm_framebuffer.h
-@@ -55,6 +55,20 @@ struct drm_framebuffer_funcs {
- 	struct drm_gem_object *(*get_scanout_obj)(struct drm_framebuffer *fb);
- };
- 
-+/* NVIDIA Driver 570.xx compatibility for kernel 6.17+ */
-+#ifdef CONFIG_DRM_NVIDIA_COMPAT
-+static inline const struct drm_format_info *nvidia_drm_get_format_info(
-+				const struct drm_mode_fb_cmd2 *cmd)
-+{
-+	return drm_format_info(cmd->pixel_format);
-+}
-+
-+struct drm_framebuffer *nvidia_drm_helper_mode_fill_fb_struct(
-+				struct drm_device *dev,
-+				struct drm_mode_fb_cmd2 *mode_cmd);
-+#endif
-+
- struct drm_framebuffer *drm_framebuffer_lookup(struct drm_device *dev,
- 				       struct drm_file *file_priv,
- 				       u32 id);
---- a/drivers/gpu/drm/drm_framebuffer.c
-+++ b/drivers/gpu/drm/drm_framebuffer.c
-@@ -164,7 +164,11 @@ EXPORT_SYMBOL(drm_framebuffer_lookup);
-  * Fills out @mode_cmd from the buffer object properties, and if the driver
-  * supports format modifiers, also from @mode_cmd itself.
-  */
-+#ifdef CONFIG_DRM_NVIDIA_COMPAT
-+struct drm_framebuffer *nvidia_drm_helper_mode_fill_fb_struct(struct drm_device *dev,
-+						    struct drm_mode_fb_cmd2 *mode_cmd)
-+#else
- void drm_helper_mode_fill_fb_struct(struct drm_device *dev,
- 				    struct drm_mode_fb_cmd2 *mode_cmd)
-+#endif
- {
- 	struct drm_framebuffer *fb;
- 	const struct drm_format_info *info;
-@@ -202,6 +206,15 @@ void drm_helper_mode_fill_fb_struct(struct drm_device *dev,
- 	fb->height = mode_cmd->height;
- 	fb->modifier = mode_cmd->modifier[0];
- 	fb->flags = mode_cmd->flags;
-+
-+#ifdef CONFIG_DRM_NVIDIA_COMPAT
-+	return fb;
-+#endif
- }
-+
-+#ifdef CONFIG_DRM_NVIDIA_COMPAT
-+EXPORT_SYMBOL_GPL(nvidia_drm_helper_mode_fill_fb_struct);
-+#endif
-+
- /**
-  * drm_framebuffer_assign - take a reference to a fb
---- a/include/drm/drm_mode_config.h
-+++ b/include/drm/drm_mode_config.h
-@@ -503,9 +503,17 @@ struct drm_mode_config_funcs {
- 	 * responsibility to clean up the framebuffer in the case of an error
- 	 * by calling @drm_framebuffer_cleanup.
- 	 */
-+#ifdef CONFIG_DRM_NVIDIA_COMPAT
-+	struct drm_framebuffer *(*fb_create)(struct drm_device *dev,
-+					     struct drm_file *file_priv,
-+					     const struct drm_mode_fb_cmd2 *mode_cmd);
-+	void (*nvidia_fb_create_compat)(void);
-+#else
- 	struct drm_framebuffer *(*fb_create)(struct drm_device *dev,
- 					     struct drm_file *file_priv,
-+					     const struct drm_format_info *format_info,
- 					     const struct drm_mode_fb_cmd2 *mode_cmd);
-+#endif
- 	/**
- 	 * @output_poll_changed:
- 	 *
