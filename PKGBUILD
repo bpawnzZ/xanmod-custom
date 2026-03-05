@@ -72,8 +72,8 @@ fi
 ### IMPORTANT: Do no edit below this line unless you know what you're doing
 
 pkgbase=linux-xanmod-lts
-_major=6.16
-pkgver=${_major}.12
+_major=6.12
+pkgver=${_major}.74
 _branch=6.x
 xanmod=1
 _revision=
