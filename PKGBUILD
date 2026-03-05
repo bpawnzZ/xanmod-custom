@@ -104,7 +104,8 @@ _srcname="linux-${pkgver}-xanmod${xanmod}"
 
 source=("https://cdn.kernel.org/pub/linux/kernel/v${_branch}/linux-${_major}.tar."{xz,sign}
         "https://downloads.sourceforge.net/project/xanmod/releases/lts/${pkgver}-xanmod${xanmod}/patch-${pkgver}-xanmod${xanmod}.xz"
-        choose-gcc-optimization.sh)
+        choose-gcc-optimization.sh
+        0001-bore-cachy.patch)
 validpgpkeys=(
     'ABAF11C65A2970B130ABE3C479BE3E4300411886' # Linux Torvalds
     '647F28654894E3BD457199BE38DBBDC86092693E' # Greg Kroah-Hartman
@@ -120,7 +121,8 @@ done
 sha256sums=('SKIP'
             'SKIP'
             'SKIP'
-            'f4acc1760990c54348a029315d1505ccb7c7270cd70a9aeb728bffcced51e767')
+            'f4acc1760990c54348a029315d1505ccb7c7270cd70a9aeb728bffcced51e767'
+            'SKIP')
 
 export KBUILD_BUILD_HOST=${KBUILD_BUILD_HOST:-archlinux}
 export KBUILD_BUILD_USER=${KBUILD_BUILD_USER:-makepkg}
@@ -218,6 +220,10 @@ prepare() {
   scripts/config --enable CONFIG_HSA_AMD
   scripts/config --enable CONFIG_DRM_AMDGPU_SI
   scripts/config --enable CONFIG_DRM_AMDGPU_CIK
+
+  # Enable BORE (Burst-Oriented Response Enhancer) scheduler for gaming
+  msg2 "Enabling BORE scheduler..."
+  scripts/config --enable CONFIG_SCHED_BORE
 
   # User set. See at the top of this file
   if [ "$use_tracers" = "y" ]; then
