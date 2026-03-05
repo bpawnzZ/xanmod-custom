@@ -151,7 +151,14 @@ prepare() {
   sed -i '/^[[:space:]]*default "6" if / s/MEMERALDRAPIDS/MEMERALDRAPIDS || X86_NATIVE_CPU/' arch/x86/Kconfig.cpu
 
   # Applying configuration
-  cp -vf CONFIGS/x86_64/${_config} .config
+  # Check if XanMod config exists, otherwise use kernel's default
+  if [ -f "CONFIGS/x86_64/${_config}" ]; then
+    cp -vf CONFIGS/x86_64/${_config} .config
+  elif [ -f "arch/x86/configs/x86_64_defconfig" ]; then
+    cp -vf arch/x86/configs/x86_64_defconfig .config
+  else
+    make defconfig
+  fi
   # enable LTO_CLANG_THIN
   if [ "${_compiler}" = "clang" ]; then
     scripts/config --disable LTO_CLANG_FULL
