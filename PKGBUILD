@@ -216,6 +216,10 @@ prepare() {
   scripts/config --enable CONFIG_ASUS_WIRELESS
   # Disable BTF to fix build error on 6.12
   scripts/config --disable CONFIG_DEBUG_INFO_BTF
+  scripts/config --disable CONFIG_DEBUG_INFO_BTF_MODULES
+  scripts/config --set-val CONFIG_DEBUG_INFO_NONE y
+  scripts/config --set-val CONFIG_DEBUG_INFO_DWARF4 n
+  scripts/config --set-val CONFIG_DEBUG_INFO_DWARF5 n
 
   # User set. See at the top of this file
   if [ "$use_tracers" = "y" ]; then
