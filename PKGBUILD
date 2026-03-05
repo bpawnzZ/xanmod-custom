@@ -302,7 +302,10 @@ prepare() {
 build() {
   cd linux-${_major}
   make ${_compiler_flags} all
-  make -C tools/bpf/bpftool vmlinux.h feature-clang-bpf-co-re=1
+  # Skip BPF tools for kernel 6.12 (BTF issues)
+  if [ "${_major}" != "6.12" ]; then
+    make -C tools/bpf/bpftool vmlinux.h feature-clang-bpf-co-re=1
+  fi
 }
 
 _package() {
