@@ -186,18 +186,18 @@ prepare() {
   scripts/config --disable CONFIG_KASAN_SW_TAGS
   scripts/config --disable CONFIG_KASAN_VMALLOC
 
-  # ASUS G752VS Optimizations (i7-6820HK + GTX 1070)
-  msg2 "Applying ASUS G752VS hardware optimizations..."
-  # Set Skylake microarchitecture optimization (x86-64-v3)
+  # AMD Ryzen 9 5900X + RTX 3070 Ti Optimizations
+  msg2 "Applying AMD Ryzen 9 5900X hardware optimizations..."
+  # Set Zen 3 microarchitecture optimization (x86-64-v3)
   scripts/config --set-val CONFIG_MCORE2 n
   scripts/config --set-val CONFIG_MK8 n
   scripts/config --set-val CONFIG_MATOM n
   scripts/config --set-val CONFIG_GENERIC_CPU n
-  scripts/config --set-val CONFIG_MNATIVE_INTEL y
-  # Enable aggressive Intel P-State passive mode for gaming
-  scripts/config --set-str CONFIG_CPU_FREQ_DEFAULT_GOV_SCHEDUTIL n
-  scripts/config --set-val CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND y
-  scripts/config --set-val CONFIG_INTEL_PSTATE passive
+  scripts/config --set-val CONFIG_MZEN3 y
+  # Enable AMD P-State driver for better power management
+  scripts/config --enable CONFIG_X86_AMD_PSTATE
+  scripts/config --enable CONFIG_AMD_PSTATE_UT
+  scripts/config --set-str CONFIG_CPU_FREQ_DEFAULT_GOV_SCHEDUTIL y
   # HZ=1000 for lower latency (better gaming)
   scripts/config --set-val CONFIG_HZ_1000 y
   scripts/config --set-val CONFIG_HZ_300 n
@@ -210,10 +210,14 @@ prepare() {
   scripts/config --set-val CONFIG_TRANSPARENT_HUGEPAGE_ALWAYS n
   # Enable futex2 for Wine/Proton compatibility
   scripts/config --enable CONFIG_FUTEX2
-  # ASUS WMI and ROG specific modules
-  scripts/config --enable CONFIG_ASUS_WMI
-  scripts/config --enable CONFIG_ASUS_NB_WMI
-  scripts/config --enable CONFIG_ASUS_WIRELESS
+  # AMD-specific sensors and power monitoring
+  scripts/config --enable CONFIG_SENSORS_K10TEMP
+  scripts/config --enable CONFIG_SENSORS_FAM15H_POWER
+  scripts/config --enable CONFIG_AMD_NB
+  # Enable AMD ROCm/OpenCL support
+  scripts/config --enable CONFIG_HSA_AMD
+  scripts/config --enable CONFIG_DRM_AMDGPU_SI
+  scripts/config --enable CONFIG_DRM_AMDGPU_CIK
 
   # User set. See at the top of this file
   if [ "$use_tracers" = "y" ]; then
