@@ -72,8 +72,8 @@ fi
 ### IMPORTANT: Do no edit below this line unless you know what you're doing
 
 pkgbase=linux-xanmod-lts
-_major=6.18
-pkgver=${_major}.15
+_major=6.16
+pkgver=${_major}.12
 _branch=6.x
 xanmod=1
 _revision=
@@ -117,9 +117,9 @@ for _patch in ${_patches[@]}; do
     source+=("${_patch}::https://raw.githubusercontent.com/archlinux/svntogit-packages/${_commit}/trunk/${_patch}")
 done
 
-sha256sums=('9106a4605da9e31ff17659d958782b815f9591ab308d03b0ee21aad6c7dced4b'
+sha256sums=('SKIP'
             'SKIP'
-            '6087873eddad2ad04336dbdfd87e28879caee047d6ca0c3c6fad82a684e02f86'
+            'SKIP'
             'f4acc1760990c54348a029315d1505ccb7c7270cd70a9aeb728bffcced51e767')
 
 export KBUILD_BUILD_HOST=${KBUILD_BUILD_HOST:-archlinux}
@@ -178,25 +178,6 @@ prepare() {
   scripts/config --disable CONFIG_KASAN_GENERIC
   scripts/config --disable CONFIG_KASAN_SW_TAGS
   scripts/config --disable CONFIG_KASAN_VMALLOC
-
-  # Enable NVIDIA driver 570.xx compatibility
-  msg2 "Enabling NVIDIA driver 570.xx DRM compatibility..."
-  # Add CONFIG_DRM_NVIDIA_COMPAT to Kconfig
-  sed -i '/config DRM_DEBUG_MM/,/source "drivers\/gpu\/drm\/i2c\/Kconfig"/ {
-    /source "drivers\/gpu\/drm\/i2c\/Kconfig"/i \
-config DRM_NVIDIA_COMPAT\
-\tbool "NVIDIA Driver 570.xx Compatibility"\
-\tdefault y\
-\thelp\
-\t  Enable backward compatibility for NVIDIA proprietary drivers\
-\t  version 570.xx and older. These drivers use an older DRM API\
-\t  that was changed in kernel 6.17. Enable this if you use\
-\t  NVIDIA drivers 570.153.02 or older.\
-\
-\t  If unsure, say Y.\
-
-  }' drivers/gpu/drm/Kconfig
-  scripts/config --enable CONFIG_DRM_NVIDIA_COMPAT
 
   # ASUS G752VS Optimizations (i7-6820HK + GTX 1070)
   msg2 "Applying ASUS G752VS hardware optimizations..."
