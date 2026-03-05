@@ -359,8 +359,14 @@ _package-headers() {
   local builddir="$pkgdir/usr/lib/modules/$(<version)/build"
 
   msg2 "Installing build files..."
-  install -Dt "$builddir" -m644 .config Makefile Module.symvers System.map \
-    localversion.* version vmlinux tools/bpf/bpftool/vmlinux.h
+  # Skip vmlinux.h for kernel 6.12 (BTF not built)
+  if [ "${_major}" = "6.12" ]; then
+    install -Dt "$builddir" -m644 .config Makefile Module.symvers System.map \
+      localversion.* version vmlinux
+  else
+    install -Dt "$builddir" -m644 .config Makefile Module.symvers System.map \
+      localversion.* version vmlinux tools/bpf/bpftool/vmlinux.h
+  fi
   install -Dt "$builddir/kernel" -m644 kernel/Makefile
   install -Dt "$builddir/arch/x86" -m644 arch/x86/Makefile
   cp -t "$builddir" -a scripts
@@ -369,8 +375,10 @@ _package-headers() {
   # required when STACK_VALIDATION is enabled
   install -Dt "$builddir/tools/objtool" tools/objtool/objtool
 
-  # required when DEBUG_INFO_BTF_MODULES is enabled
-  install -Dt "$builddir/tools/bpf/resolve_btfids" tools/bpf/resolve_btfids/resolve_btfids
+  # required when DEBUG_INFO_BTF_MODULES is enabled (skip for 6.12)
+  if [ "${_major}" != "6.12" ]; then
+    install -Dt "$builddir/tools/bpf/resolve_btfids" tools/bpf/resolve_btfids/resolve_btfids
+  fi
 
   msg2 "Installing headers..."
   cp -t "$builddir" -a include
