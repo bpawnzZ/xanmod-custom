@@ -72,8 +72,8 @@ fi
 ### IMPORTANT: Do no edit below this line unless you know what you're doing
 
 pkgbase=linux-xanmod-lts
-_major=6.12
-pkgver=${_major}.74
+_major=6.18
+pkgver=${_major}.15
 _branch=6.x
 xanmod=1
 _revision=
@@ -104,8 +104,7 @@ _srcname="linux-${pkgver}-xanmod${xanmod}"
 
 source=("https://cdn.kernel.org/pub/linux/kernel/v${_branch}/linux-${_major}.tar."{xz,sign}
         "https://downloads.sourceforge.net/project/xanmod/releases/lts/${pkgver}-xanmod${xanmod}/patch-${pkgver}-xanmod${xanmod}.xz"
-        choose-gcc-optimization.sh
-        0001-bore-cachy.patch)
+        choose-gcc-optimization.sh)
 validpgpkeys=(
     'ABAF11C65A2970B130ABE3C479BE3E4300411886' # Linux Torvalds
     '647F28654894E3BD457199BE38DBBDC86092693E' # Greg Kroah-Hartman
@@ -118,11 +117,10 @@ for _patch in ${_patches[@]}; do
     source+=("${_patch}::https://raw.githubusercontent.com/archlinux/svntogit-packages/${_commit}/trunk/${_patch}")
 done
 
-sha256sums=('SKIP'
+sha256sums=('9106a4605da9e31ff17659d958782b815f9591ab308d03b0ee21aad6c7dced4b'
             'SKIP'
-            'SKIP'
-            'f4acc1760990c54348a029315d1505ccb7c7270cd70a9aeb728bffcced51e767'
-            'SKIP')
+            '6087873eddad2ad04336dbdfd87e28879caee047d6ca0c3c6fad82a684e02f86'
+            'f4acc1760990c54348a029315d1505ccb7c7270cd70a9aeb728bffcced51e767')
 
 export KBUILD_BUILD_HOST=${KBUILD_BUILD_HOST:-archlinux}
 export KBUILD_BUILD_USER=${KBUILD_BUILD_USER:-makepkg}
@@ -153,14 +151,7 @@ prepare() {
   sed -i '/^[[:space:]]*default "6" if / s/MEMERALDRAPIDS/MEMERALDRAPIDS || X86_NATIVE_CPU/' arch/x86/Kconfig.cpu
 
   # Applying configuration
-  # Check if XanMod config exists, otherwise use kernel's default
-  if [ -f "CONFIGS/x86_64/${_config}" ]; then
-    cp -vf CONFIGS/x86_64/${_config} .config
-  elif [ -f "arch/x86/configs/x86_64_defconfig" ]; then
-    cp -vf arch/x86/configs/x86_64_defconfig .config
-  else
-    make defconfig
-  fi
+  cp -vf CONFIGS/x86_64/${_config} .config
   # enable LTO_CLANG_THIN
   if [ "${_compiler}" = "clang" ]; then
     scripts/config --disable LTO_CLANG_FULL
@@ -220,10 +211,6 @@ prepare() {
   scripts/config --enable CONFIG_HSA_AMD
   scripts/config --enable CONFIG_DRM_AMDGPU_SI
   scripts/config --enable CONFIG_DRM_AMDGPU_CIK
-
-  # Enable BORE (Burst-Oriented Response Enhancer) scheduler for gaming
-  msg2 "Enabling BORE scheduler..."
-  scripts/config --enable CONFIG_SCHED_BORE
 
   # User set. See at the top of this file
   if [ "$use_tracers" = "y" ]; then
