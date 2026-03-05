@@ -72,12 +72,12 @@ fi
 ### IMPORTANT: Do no edit below this line unless you know what you're doing
 
 pkgbase=linux-xanmod-lts
-_major=6.12
-pkgver=${_major}.74
+_major=6.16
+pkgver=${_major}.12
 _branch=6.x
-xanmod=1
+xanmod=
 _revision=
-pkgrel=$((xanmod + 1))
+pkgrel=1
 pkgdesc='Linux Xanmod - Long Term Support [LTS]'
 url="http://www.xanmod.org/"
 arch=(x86_64)
@@ -100,10 +100,9 @@ if [ "${_compiler}" = "clang" ]; then
   makedepends+=(clang llvm lld)
 fi
 options=('!strip')
-_srcname="linux-${pkgver}-xanmod${xanmod}"
+_srcname="linux-${pkgver}"
 
 source=("https://cdn.kernel.org/pub/linux/kernel/v${_branch}/linux-${_major}.tar."{xz,sign}
-        "https://downloads.sourceforge.net/project/xanmod/releases/lts/${pkgver}-xanmod${xanmod}/patch-${pkgver}-xanmod${xanmod}.xz"
         choose-gcc-optimization.sh)
 validpgpkeys=(
     'ABAF11C65A2970B130ABE3C479BE3E4300411886' # Linux Torvalds
@@ -119,7 +118,6 @@ done
 
 sha256sums=('SKIP'
             'SKIP'
-            'SKIP'
             'f4acc1760990c54348a029315d1505ccb7c7270cd70a9aeb728bffcced51e767')
 
 export KBUILD_BUILD_HOST=${KBUILD_BUILD_HOST:-archlinux}
@@ -129,8 +127,8 @@ export KBUILD_BUILD_TIMESTAMP=${KBUILD_BUILD_TIMESTAMP:-$(date -Ru${SOURCE_DATE_
 prepare() {
   cd linux-${_major}
 
-  # Apply Xanmod patch
-  patch -Np1 -i ../patch-${pkgver}-xanmod${xanmod}${_revision}
+  # No XanMod patch for 6.16.x - using vanilla kernel
+  # patch -Np1 -i ../patch-${pkgver}-xanmod${xanmod}${_revision}
 
   msg2 "Setting version..."
   echo "-$pkgrel" > localversion.10-pkgrel
@@ -150,15 +148,8 @@ prepare() {
   # Address bug https://gitlab.com/xanmod/linux/-/issues/446
   sed -i '/^[[:space:]]*default "6" if / s/MEMERALDRAPIDS/MEMERALDRAPIDS || X86_NATIVE_CPU/' arch/x86/Kconfig.cpu
 
-  # Applying configuration
-  # Check if XanMod config exists, otherwise use kernel's default
-  if [ -f "CONFIGS/x86_64/${_config}" ]; then
-    cp -vf CONFIGS/x86_64/${_config} .config
-  elif [ -f "arch/x86/configs/x86_64_defconfig" ]; then
-    cp -vf arch/x86/configs/x86_64_defconfig .config
-  else
-    make defconfig
-  fi
+  # Applying configuration - use kernel's defconfig for 6.16
+  cp -vf arch/x86/configs/x86_64_defconfig .config
   # enable LTO_CLANG_THIN
   if [ "${_compiler}" = "clang" ]; then
     scripts/config --disable LTO_CLANG_FULL
@@ -214,12 +205,6 @@ prepare() {
   scripts/config --enable CONFIG_ASUS_WMI
   scripts/config --enable CONFIG_ASUS_NB_WMI
   scripts/config --enable CONFIG_ASUS_WIRELESS
-  # Disable BTF to fix build error on 6.12
-  scripts/config --disable CONFIG_DEBUG_INFO_BTF
-  scripts/config --disable CONFIG_DEBUG_INFO_BTF_MODULES
-  scripts/config --set-val CONFIG_DEBUG_INFO_NONE y
-  scripts/config --set-val CONFIG_DEBUG_INFO_DWARF4 n
-  scripts/config --set-val CONFIG_DEBUG_INFO_DWARF5 n
 
   # User set. See at the top of this file
   if [ "$use_tracers" = "y" ]; then
