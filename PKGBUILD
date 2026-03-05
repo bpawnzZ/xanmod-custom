@@ -206,6 +206,20 @@ prepare() {
   scripts/config --enable CONFIG_ASUS_NB_WMI
   scripts/config --enable CONFIG_ASUS_WIRELESS
 
+  # Enable VFIO for GPU passthrough
+  msg2 "Enabling VFIO for GPU passthrough..."
+  scripts/config --enable CONFIG_VFIO
+  scripts/config --enable CONFIG_VFIO_PCI
+  scripts/config --enable CONFIG_VFIO_PCI_CORE
+  scripts/config --enable CONFIG_VFIO_IOMMU_TYPE1
+  scripts/config --enable CONFIG_VFIO_MDEV
+  scripts/config --enable CONFIG_VFIO_MDEV_DEVICE
+  scripts/config --enable CONFIG_IOMMU_SUPPORT
+  scripts/config --enable CONFIG_INTEL_IOMMU
+  scripts/config --enable CONFIG_INTEL_IOMMU_DEFAULT_ON
+  scripts/config --enable CONFIG_INTEL_IOMMU_SVM
+  scripts/config --enable CONFIG_DMAR_TABLE
+
   # User set. See at the top of this file
   if [ "$use_tracers" = "y" ]; then
     msg2 "Enabling CONFIG_FTRACE only if we are not compiling with clang..."
